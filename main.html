@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body id="body">
+    <style>
+    body {
+        overflow: hidden; /* Hide scrollbars */
+      }</style>
+    <canvas id="tela" align="right" ></canvas>
+    <script>
+        const canvas = document.querySelector("canvas");
+    
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      document.getElementById('body').style.margin = '0 0 0 0'
+      
+    }
+    
+    resize()
+    window.addEventListener('resize', resize)
+    // Space Invaders
+    // Autor: Ayo Oyewole
+    // Adaptado por: Gilson Pereira
+    // Código fonte original: http://www.ayodeji.ca/space-invaders/
+    
+    // Programa principal
+    function advance(event) {
+    
+    if (event instanceof KeyboardEvent && event.keyCode === 13&&aliensRestantes.length==0) {
+        location.reload();}
+    }
+    
+    window.addEventListener('keypress', advance);
+    var tela
+    var c;
+    var gameOver;
+    var corDeFundo = "black"
+    var canhao;
+    var laser;
+    var alien;
+    larguraDivididoPor11 = parseInt(window.innerWidth/11)
+    var canhaoX = 180;
+    var canhaoY = innerHeight-100;
+    var laserX = 218;
+    var laserY = innerHeight-166;
+    var alienX = 0;
+    var alienY = 0;
+    var inicioLaser = false;
+    var impactoLaserX;
+    var laserMovendo;
+    var intervalo = 10;
+    var posicao = 0;
+    var velocidade = 0.4    
+    var alienLinhas = [10,larguraDivididoPor11*1+10,larguraDivididoPor11*2+10,larguraDivididoPor11*3+10,larguraDivididoPor11*4+10,larguraDivididoPor11*5+10,larguraDivididoPor11*6+10,larguraDivididoPor11*7+10,larguraDivididoPor11*8+10,larguraDivididoPor11*9+10];
+    var alienColunas = [40, 80, 120, 160, 200];
+    var aliensRestantes = [];
+    var laseraliensX = 280;
+    var laseraliensY= innerHeight-166;
+
+    
+    const C_ALTURA = window.innerHeight;
+    const C_LARGURA = window.innerWidth;
+    
+    const TECLA_ESQUERDA = 37;
+    const TECLA_DIREITA = 39;
+    const TECLA_ACIMA = 32;
+    
+    onkeydown = moverCanhao; // Define função chamada ao se pressionar uma tecla
+    
+    iniciar(); // Chama função inicial do jogo
+    
+    
+    // Sub-rotinas (funções)
+    
+    function iniciar() {
+        tela = document.getElementById("tela");
+        c = tela.getContext("2d");
+        
+    
+        c.fillStyle = corDeFundo
+        c.fillRect(0, 0, C_LARGURA, C_ALTURA);
+    
+        posicionarAlien();
+        carregarImagens();
+    
+        setInterval("moverAliens()", intervalo);
+        setInterval("alienAtingido()", 6);
+    
+    }    
+    
+    
+    
+    function posicionarAlien() {
+        for (var i = 0; i < alienLinhas.length; i++){
+            for (var j = 0; j < alienColunas.length; j++){
+                var novoAlien = {
+                    posX : alienLinhas[i],
+                    posY : alienColunas[j],
+                    foiAtingido : false
+                };
+                
+                aliensRestantes[aliensRestantes.length] = novoAlien;
+            }
+        }
+    }    
+    
+    function carregarImagens() {
+        canhao = new Image();
+        canhao.src = "canhao.png";
+        canhao.onload = function(){
+            c.drawImage(canhao, canhaoX, canhaoY);
+        }
+        
+        laser = new Image();
+        laser.src = "laser.png";
+        
+        alien = new Image();
+        alien.src = "alien.png";
+
+        planet = new Image()
+        planet.src = "planet.png"
+    }
+    
+    function moverAliens(){
+            if (posicao <= 65){
+                alienX += velocidade;
+                posicao += velocidade;
+            } else if ((posicao > 65) && (posicao <= 80)){
+                alienX += velocidade;
+                alienY += velocidade
+                posicao += velocidade;            
+            } else if ((posicao > 80) && (posicao <= 147)){
+                alienX -= velocidade;
+                posicao += velocidade;
+            } else if ((posicao > 147) && (posicao < 162)){
+                alienX -= velocidade;
+                alienY += velocidade;
+                posicao += velocidade;
+            } else{
+                posicao = velocidade;
+            }
+            
+            for (var i = 0; i < aliensRestantes.length; i++){
+                if (!aliensRestantes[i].foiAtingido){
+                    c.fillRect((alienX + aliensRestantes[i].posX - 1), (alienY + aliensRestantes[i].posY - 1), 62, 62);
+                    c.drawImage(alien, (alienX + aliensRestantes[i].posX), (alienY + aliensRestantes[i].posY));
+                    
+                    if ((aliensRestantes[i].posY + alienY + 23) >= innerHeight-140){
+                        fimDeJogo();
+                    }
+                }
+            }
+    }
+    var quantidaderestante = 50
+    function alienAtingido(){
+        for(var i = 0; i < aliensRestantes.length; i++){
+            if (
+                (laserY >= (alienY + aliensRestantes[i].posY)) && 
+                (laserY <= (alienY + aliensRestantes[i].posY + 20)) && 
+                (impactoLaserX >= (alienX + aliensRestantes[i].posX - 0)) && 
+                (impactoLaserX <= (alienX + aliensRestantes[i].posX + 60))
+                ){
+                if (!aliensRestantes[i].foiAtingido){
+                    c.fillStyle = corDeFundo;
+                    c.fillRect((alienX + aliensRestantes[i].posX - 1), (alienY + aliensRestantes[i].posY - 1), 80, 80);
+                    aliensRestantes[i].foiAtingido = true;
+                    c.fillRect(impactoLaserX, laserY, 6, 19);
+                    laserY = 0;
+                    quantidaderestante--
+                    console.log(quantidaderestante)
+                    if (quantidaderestante== 0){jogoGanho()}
+                }
+            }
+        }    
+    }
+    function fimDeJogo(){
+        canhaoX = 180;
+        laserX = 193;
+        laserY = 520;
+        alienX = 0;
+        alienY = 0;
+        posicao = 0;
+        aliensRestantes = [];
+        inicioLaser = false;
+        
+        c.fillStyle = "blue";
+        c.fillRect(0, 0, C_LARGURA, C_ALTURA);
+        c.textAlign = "center";
+        c.font = "58px Fantasy";
+        c.fillStyle = "orange";
+        c.fillText("Game Over", C_LARGURA/2, C_ALTURA/3);
+        c.font = "18px Fantasy";
+        c.fillText("APERTE ENTER PARA COMECAR DNV", C_LARGURA/2, C_ALTURA/2,C_LARGURA);
+        
+    
+        onkeydown = null;
+        aliensRestantes = []
+    }
+    
+    function jogoGanho(){
+        canhaoX = 180;
+        laserX = 193;
+        laserY = innerHeight-166;
+        alienX = 0;
+        alienY = 0;
+        posicao = 0;
+        aliensRestantes = [];
+        inicioLaser = false;
+        
+        c.fillStyle = "blue";
+        c.fillRect(0, 0, C_LARGURA, C_ALTURA);
+        
+        c.textAlign = "center";
+        c.font = "58px Fantasy";
+        c.fillStyle = "orange";
+        c.fillText("You Win!", C_LARGURA/2, C_ALTURA/3);
+        c.font = "18px Fantasy";
+        c.fillText("APERTE ENTER PARA COMECAR DNV", C_LARGURA/2, C_ALTURA/2,C_LARGURA);
+    
+        onkeydown = null;
+    }
+    
+    function moverCanhao(tecla){
+        var codigo = tecla.keyCode;
+        
+        if ((codigo == TECLA_DIREITA) && (canhaoX <= window.innerWidth)){
+            c.fillStyle = corDeFundo;
+            c.fillRect(canhaoX, window.innerHeight-100, 50, 80);
+            canhaoX += 13;
+            laserX += 13;
+            c.drawImage(canhao, canhaoX, canhaoY);
+        }
+        
+        if ((codigo == TECLA_ESQUERDA) && (canhaoX >= 40)){
+            c.fillStyle = corDeFundo;
+            c.fillRect(canhaoX+30, window.innerHeight-100, 50, 80);
+            canhaoX -= 13;
+            laserX -= 13;
+            c.drawImage(canhao, canhaoX, canhaoY);
+        }
+        
+        if ((codigo == TECLA_ACIMA) && !inicioLaser){
+            inicioLaser = true;
+            c.drawImage(laser, laserX, laserY);
+            impactoLaserX = laserX;
+            laserMovendo = setInterval("dispararLaser()", 5);
+        }
+    }
+    
+    function dispararLaser(){
+        if (inicioLaser && (laserY >= 60)){
+            laserY -= 10;
+            c.fillStyle = corDeFundo;
+            c.fillRect(impactoLaserX, (laserY + 20), 15, 57);
+            
+            if (laserY >= 70){
+                c.drawImage(laser, impactoLaserX, laserY);
+            }
+        }
+        
+        if (laserY < 60){
+            clearInterval(laserMovendo);
+            inicioLaser = false;
+            laserY = innerHeight-166;
+        }
+    
+    }
+    
+    
+    </script>
+</body>
+</html>
